@@ -6,6 +6,38 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(SFML_STATIC_LIBRARIES TRUE)
+set(OPENSSL_USE_STATIC_LIBS TRUE)
+
+include(FetchContent)
+FetchContent_Declare(SFML
+        GIT_REPOSITORY https://github.com/SFML/SFML.git
+        GIT_TAG 3.0.2
+        GIT_SHALLOW ON
+        EXCLUDE_FROM_ALL
+        SYSTEM)
+FetchContent_MakeAvailable(SFML)
+
+FetchContent_Declare(httplib
+        GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+        GIT_TAG v0.29.0
+        GIT_SHALLOW ON
+        EXCLUDE_FROM_ALL
+        SYSTEM)
+FetchContent_MakeAvailable(httplib)
+
+FetchContent_Declare(httplib
+        GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+        GIT_TAG v0.29.0
+        GIT_SHALLOW ON
+        EXCLUDE_FROM_ALL
+        SYSTEM)
+FetchContent_MakeAvailable(httplib)
+
+FetchContent_Declare(json
+	URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
+find_package(OpenSSL)
 
 if(MSVC)
     add_compile_options(/O2 /MT /DNDEBUG)
@@ -14,9 +46,6 @@ if(MSVC)
     find_package(SFML 3 COMPONENTS Graphics Window System REQUIRED)
 else()
     add_compile_options(-O3 -march=native -DNDEBUG)
-    set(SFML_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs/SFML-3.0.2-MinGW/lib/cmake/SFML")
-    set(Freetype_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs/SFML-3.0.2-MinGW/lib/cmake/freetype")
-    find_package(SFML 3 COMPONENTS Graphics Window System REQUIRED)
 endif()
 
 if(WIN32)
@@ -52,9 +81,13 @@ if(MSVC)
 else()
     target_include_directories(sapphire_core PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/src"
-        "${CMAKE_CURRENT_SOURCE_DIR}/libs"
-        "${CMAKE_CURRENT_SOURCE_DIR}/libs/SFML-3.0.2-MinGW/include"
-        "${CMAKE_CURRENT_SOURCE_DIR}/libs/openssl/include"
+    )
+    target_link_libraries(sapphire_core PRIVATE
+        SFML::Graphics
+        SFML::Window
+        SFML::System
+	httplib
+	nlohmann_json::nlohmann_json
     )
 endif()
 
@@ -83,16 +116,8 @@ else()
         SFML::Graphics
         SFML::Window
         SFML::System
-        "${CMAKE_CURRENT_SOURCE_DIR}/libs/openssl/lib-mingw/libssl.a"
-        "${CMAKE_CURRENT_SOURCE_DIR}/libs/openssl/lib-mingw/libcrypto.a"
-        ws2_32
-        crypt32
-        psapi
-        user32
-        gdi32
-        bcrypt
-        opengl32
-        winmm
-        -pthread
-    )
+	OpenSSL::Crypto
+	OpenSSL::SSL
+	httplib
+   )
 endif()
